@@ -1,0 +1,9 @@
+npm-debug.log
+dist
+.git
+.github
+.vscode
+.DS_Store
+*.local
+backend
+.env

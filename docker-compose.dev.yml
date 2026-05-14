@@ -1,0 +1,59 @@
+# Development overrides for explicit use only.
+# Start with:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+      - VITE_SOCKET_URL=http://localhost:5000
+      - NODE_ENV=development
+    depends_on:
+      backend:
+        condition: service_started
+
+  backend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://bodaboda:bodaboda123@database:5432/bodaboda
+      - JWT_SECRET=dev_jwt_secret_key_for_local_development
+      - CORS_ORIGIN=http://localhost:5173
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: postgres:16-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=bodaboda
+      - POSTGRES_PASSWORD=bodaboda123
+      - POSTGRES_DB=bodaboda
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bodaboda -d bodaboda"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres-data:
