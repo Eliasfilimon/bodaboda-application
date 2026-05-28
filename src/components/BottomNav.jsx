@@ -1,38 +1,51 @@
 import { NavLink } from "react-router-dom";
-import { FiGrid, FiHome, FiMapPin, FiList } from "react-icons/fi";
+import { FiBell, FiGrid, FiHome, FiList, FiMapPin, FiUser } from "react-icons/fi";
+import { useAuth } from "../context/AuthContext";
 
 const navItemClass = ({ isActive }) =>
-  `flex flex-col items-center gap-1 text-xs font-medium transition ${
-    isActive ? "text-amber-600" : "text-navy-800 hover:text-amber-500"
+  `flex flex-col items-center gap-0.5 text-xs font-medium transition px-2 ${
+    isActive ? "text-amber-500" : "text-navy-800 dark:text-gray-300 hover:text-amber-500"
   }`;
 
 export const BottomNav = () => {
+  const { isAuthenticated, userType } = useAuth();
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-sand-200 shadow-card md:hidden safe-area-bottom">
-      <div className="max-w-md mx-auto px-6 py-3 flex items-center justify-between">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-sand-200 dark:border-gray-800 shadow-lg md:hidden">
+      <div className="max-w-md mx-auto px-2 py-2 flex items-end justify-between">
         <NavLink to="/" className={navItemClass}>
-          <div className={`p-2 rounded-xl transition ${navItemClass({ isActive: false }).includes('text-amber-600') ? 'bg-amber-100' : 'hover:bg-sand-100'}`}>
-            <FiHome className="text-xl" />
-          </div>
-          Home
+          <FiHome size={22} />
+          <span>Home</span>
         </NavLink>
+
         <NavLink to="/history" className={navItemClass}>
-          <div className={`p-2 rounded-xl transition ${navItemClass({ isActive: false }).includes('text-amber-600') ? 'bg-amber-100' : 'hover:bg-sand-100'}`}>
-            <FiList className="text-xl" />
-          </div>
-          History
+          <FiList size={22} />
+          <span>History</span>
         </NavLink>
-        <NavLink to="/request" className={navItemClass}>
-          <div className="p-3 -mt-8 bg-amber-500 rounded-2xl shadow-amber">
-            <FiMapPin className="text-xl text-white" />
+
+        {/* Center FAB */}
+        <NavLink to="/request" className="flex flex-col items-center -mt-5">
+          <div className="w-14 h-14 bg-amber-500 hover:bg-amber-600 transition rounded-2xl shadow-lg flex items-center justify-center">
+            <FiMapPin size={26} className="text-white" />
           </div>
-          Request
+          <span className="text-xs font-medium text-amber-600 mt-1">Ride</span>
         </NavLink>
-        <NavLink to="/dashboard" className={navItemClass}>
-          <div className={`p-2 rounded-xl transition ${navItemClass({ isActive: false }).includes('text-amber-600') ? 'bg-amber-100' : 'hover:bg-sand-100'}`}>
-            <FiGrid className="text-xl" />
-          </div>
-          Dashboard
+
+        {isAuthenticated && userType === 'rider' ? (
+          <NavLink to="/dashboard" className={navItemClass}>
+            <FiGrid size={22} />
+            <span>Dashboard</span>
+          </NavLink>
+        ) : (
+          <NavLink to="/notifications" className={navItemClass}>
+            <FiBell size={22} />
+            <span>Alerts</span>
+          </NavLink>
+        )}
+
+        <NavLink to={isAuthenticated ? "/profile" : "/login"} className={navItemClass}>
+          <FiUser size={22} />
+          <span>{isAuthenticated ? 'Profile' : 'Login'}</span>
         </NavLink>
       </div>
     </nav>
