@@ -1,282 +1,114 @@
-# BodaBoda Digital 🏍️
+<div align="center">
 
-A full-stack web application for a boda boda (motorcycle taxi) association in Dodoma, Tanzania. This platform connects customers with riders, provides real-time tracking, fare estimation, and trip management.
+# 🏍️ BodaBoda Application
 
-## Features ✨
+**Fast, safe, and affordable motorcycle taxi rides across Dodoma — powered by real-time matching.**
 
-### For Customers
-- **User Registration**: Create account with phone number validation
-- **Customer Login**: Sign in with phone number to access rides and history
-- **Request Rides**: Book rides with pickup/dropoff locations
-- **Real-time Tracking**: Track rider location on interactive map
-- **Fare Estimation**: Automatic fare calculation based on distance
-- **Trip History**: View past rides and their status
-- **Rate Trips**: Rate completed rides and view rider ratings
-- **Profile Management**: Update personal details and payment methods
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
-### For Riders
-- **Rider Registration**: Register with license plate and vehicle details
-- **Rider Dashboard**: View assigned trips, earnings, and statistics
-- **Trip Management**: Accept and complete trips
-- **Online/Offline Status**: Toggle availability status
-- **Earnings Tracking**: Monitor daily and total earnings
+</div>
 
-### Technical Features
-- 🔐 JWT Authentication
-- 🗺️ Interactive maps with Leaflet
-- 🔄 Real-time updates (Socket.io ready)
-- 📱 Responsive mobile-first design
-- ✅ Form validation with Tanzanian phone format
-- 🐳 Docker support for deployment
+---
 
-## Tech Stack 🛠️
+## 📖 Overview
 
-### Frontend
-- React 19 + Vite
-- React Router DOM
-- Tailwind CSS
-- Leaflet Maps
-- Context API for state management
+BodaBoda Application is a full-stack ride-sharing platform built for the **Dodoma Bodaboda Association**, connecting passengers with trusted motorcycle taxi riders. The platform provides real-time ride matching, transparent pricing, and a seamless booking experience tailored for Tanzania's urban transport needs.
 
-### Backend
-- Node.js + Express
-- PostgreSQL + Sequelize
-- JWT Authentication
-- Socket.io (for real-time features)
-- CORS + Helmet security
+## ✨ Features
 
-## Prerequisites 📋
+- 🔴 **Real-time ride matching** — connects passengers and riders instantly
+- 💰 **Transparent pricing** — clear fare estimates before booking
+- 📍 **Live GPS tracking** — track your rider on an interactive map
+- 🔐 **Secure authentication** — JWT-based auth for riders and passengers
+- 📊 **Admin dashboard** — fleet management, analytics, and driver management
+- 🐳 **Docker-ready** — full containerized deployment with Prometheus + Grafana monitoring
+- 📱 **Responsive UI** — works seamlessly on mobile and desktop
 
-- Node.js 18+ and npm
-- PostgreSQL 14+
-- Git
+## 🛠️ Tech Stack
 
-## Quick Start 🚀
+| Layer | Technology |
+|---|---|
+| **Frontend** | React.js, Vite, Tailwind CSS |
+| **Backend** | Node.js, Express |
+| **Database** | PostgreSQL |
+| **Auth** | JWT (JSON Web Tokens) |
+| **DevOps** | Docker, Docker Compose, Nginx |
+| **Monitoring** | Prometheus, Grafana |
 
-### 1. Clone the Repository
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js v18+
+- Docker & Docker Compose
+- PostgreSQL 15+
+
+### Quick Start (Docker)
 
 ```bash
-git clone <repository-url>
-cd boda-boda-digital
-```
+# Clone the repository
+git clone https://github.com/Eliasfilimon/bodaboda-application.git
+cd bodaboda-application
 
-### 2. Setup Backend
-
-```bash
-cd backend
-
-# Copy environment file
+# Copy environment variables
 cp .env.example .env
 
-# Edit .env with your PostgreSQL connection and JWT secret
-# DATABASE_URL=postgresql://localhost:5432/bodaboda
-# JWT_SECRET=your_secret_key
+# Start all services
+docker-compose up --build
+```
 
+The app will be available at `http://localhost:3000`
+
+### Manual Setup
+
+```bash
 # Install dependencies
 npm install
 
-# Start backend server
-npm start
-```
-
-Backend will run on `http://localhost:5000`
-
-### 3. Setup Frontend
-
-```bash
-# In a new terminal, from project root
-cp .env.example .env
-
-# Edit .env with backend URL
-# VITE_API_URL=http://localhost:5000/api
-
-# Install dependencies
-npm install
+# Set up the database
+bash setup-database.sh
 
 # Start development server
 npm run dev
 ```
 
-Frontend will run on `http://localhost:5173`
+For full backend setup details, see [BACKEND_SETUP.md](./BACKEND_SETUP.md).
 
-## Docker Setup 🐳
-
-### Quick Start with Docker
-
-```bash
-# Start all services (production mode)
-./docker.sh up
-
-# Or for development with hot reload
-./docker.sh dev
-```
-
-### Available Services
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| Frontend | http://localhost:8080 | React app (production) |
-| Frontend Dev | http://localhost:5173 | React app (development) |
-| API | http://localhost:5000 | Backend API |
-| PostgreSQL | localhost:5433 | Database |
-
-### Docker Commands
-
-```bash
-# View all commands
-./docker.sh
-
-# Common commands
-./docker.sh up      # Start services
-./docker.sh dev     # Development mode (uses docker-compose.dev.yml)
-./docker.sh logs    # View logs
-./docker.sh seed    # Seed database
-./docker.sh psql    # Database console
-./docker.sh reset   # Reset all data
-```
-
-See [DOCKER.md](DOCKER.md) for detailed Docker documentation.
-
-## Environment Variables 🔧
-
-### Frontend (.env)
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_SOCKET_URL=http://localhost:5000
-```
-
-### Backend (.env)
-```env
-PORT=5000
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bodaboda
-JWT_SECRET=your_jwt_secret_here
-NODE_ENV=development
-```
-
-## API Endpoints 📡
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/google` - Google OAuth login
-- `GET /api/auth/me` - Get current user
-
-### Rider Authentication
-- `POST /api/rider-auth/register` - Register new rider
-- `POST /api/rider-auth/login` - Login rider
-- `GET /api/rider-auth/profile` - Get rider profile
-
-### Users
-- `GET /api/users/:id` - Get user details
-- `PUT /api/users/:id` - Update user profile
-- `POST /api/users/:id/payment-methods` - Add payment method
-
-### Riders
-- `GET /api/riders` - Get all riders
-- `GET /api/riders/online` - Get online riders
-- `GET /api/riders/:id` - Get rider details
-- `PUT /api/riders/:id/status` - Update rider status
-- `PUT /api/riders/:id/location` - Update rider location
-
-### Trips
-- `POST /api/trips` - Create new trip
-- `GET /api/trips/:id` - Get trip details
-- `GET /api/trips/user/:userId` - Get user's trips
-- `GET /api/trips/rider/:riderId` - Get rider's trips
-- `PUT /api/trips/:id/accept` - Accept trip (rider)
-- `PUT /api/trips/:id/complete` - Complete trip
-- `PUT /api/trips/:id/cancel` - Cancel trip
-- `PUT /api/trips/:id/rate` - Rate completed trip
-
-## Project Structure 📁
+## 📁 Project Structure
 
 ```
-boda-boda-digital/
-├── src/                      # Frontend source
-│   ├── components/          # Reusable components
-│   ├── context/            # React Context providers
-│   ├── pages/              # Page components
-│   ├── utils/              # Utility functions
-│   └── config/             # Configuration files
-├── backend/                 # Backend source
-│   ├── src/
-│   │   ├── config/        # DB and Socket config
-│   │   ├── controllers/   # Route controllers
-│   │   ├── middleware/    # Auth middleware
-│   │   ├── models/        # Sequelize models
-│   │   └── routes/        # API routes
-│   └── package.json
-├── .env.example            # Frontend env template
-├── backend/.env.example    # Backend env template
-├── docker-compose.yml      # Docker orchestration
-├── Dockerfile              # Frontend Docker image
-└── README.md
+bodaboda-application/
+├── src/                  # React frontend source
+├── backend/              # Node.js/Express API
+├── grafana/              # Grafana dashboard configs
+├── docker-compose.yml    # Production compose
+├── docker-compose.dev.yml# Development compose
+├── nginx.conf            # Nginx reverse proxy config
+└── prometheus.yml        # Monitoring config
 ```
 
-## Form Validation ✅
+## 📄 Documentation
 
-The application includes comprehensive validation:
+- [Backend Setup Guide](./BACKEND_SETUP.md)
+- [Docker Deployment](./DOCKER.md)
+- [Business Logic](./BUSINESS_LOGIC.md)
+- [Backend Readiness Checklist](./BACKEND_READINESS.md)
 
-- **Phone Numbers**: Tanzanian format (`+2557XXXXXXXX` or `07XXXXXXXX`)
-- **Names**: Letters, spaces, hyphens only (2-50 characters)
-- **License Plates**: Tanzanian format validation
-- **Real-time Feedback**: Errors shown on blur, cleared on input
-- **Loading States**: Visual feedback during form submission
+## 🤝 Contributing
 
-## Docker Deployment 🐳
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-### Build and Run with Docker Compose
+## 📜 License
 
-```bash
-# Copy environment files
-cp .env.example .env
-cd backend && cp .env.example .env && cd ..
-
-# Build and start all services
-docker compose -f docker-compose.yml up --build
-```
-
-This will start:
-- Frontend on port 8080
-- Backend on port 5000
-- PostgreSQL on port 5433
-
-### Production Build
-
-```bash
-# Frontend production build
-npm run build
-
-# Serve built files
-npm run preview
-```
-
-## Future Enhancements 🚀
-
-- [ ] M-Pesa/Tigo Pesa/Airtel Money payment integration
-- [ ] SMS notifications for trip updates
-- [ ] Mobile app (React Native)
-- [ ] Admin dashboard for association management
-- [ ] Rider earnings withdrawal system
-- [ ] Multi-language support (Swahili)
-- [ ] Offline support (PWA)
-
-## Contributing 🤝
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License 📄
-
-This project is licensed under the MIT License.
-
-## Support 💬
-
-For support, email support@bodaboda.digital or join our Slack channel.
+MIT License — see [LICENSE](./LICENSE) for details.
 
 ---
 
-Built with ❤️ for Dodoma Boda Boda Association
+<div align="center">
+Built with ❤️ for Dodoma, Tanzania
+</div>
