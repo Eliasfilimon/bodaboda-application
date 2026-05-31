@@ -26,7 +26,6 @@ const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
   : true;
 
-setupAssociations();
 initializeSocket(server);
 client.collectDefaultMetrics({ register });
 
@@ -74,7 +73,6 @@ const start = async () => {
   setupAssociations();
   if (process.env.SEED_DB === 'true') await seedDatabase();
 
-  // Connect to MQTT broker (non-blocking — app still starts if broker is unavailable)
   try {
     connectMQTT();
   } catch (err) {
