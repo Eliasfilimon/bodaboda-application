@@ -1,4 +1,27 @@
 services:
+
+  # ── MQTT Broker (Mosquitto) ──────────────────────────────────────────────────
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0
+    container_name: bodaboda-mqtt
+    ports:
+      - "1883:1883"   # MQTT
+      - "9001:9001"   # WebSocket (optional for browser clients)
+    volumes:
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt-data:/mosquitto/data
+      - mqtt-logs:/mosquitto/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health", "-m", "ping", "-q", "0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - bodaboda-network
+
+  # ── Frontend (React + Vite) ──────────────────────────────────────────────────
   frontend:
     build:
       context: .
@@ -15,6 +38,7 @@ services:
     networks:
       - bodaboda-network
 
+  # ── Backend (Node.js/Express) ────────────────────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -28,8 +52,11 @@ services:
       - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_key_change_this_in_production}
       - NODE_ENV=production
       - CORS_ORIGIN=http://localhost:8080
+      - MQTT_BROKER_URL=mqtt://mqtt-broker:1883
     depends_on:
       database:
+        condition: service_healthy
+      mqtt-broker:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode == 200 ? 0 : 1)}).on('error', () => process.exit(1))"]
@@ -40,6 +67,7 @@ services:
     networks:
       - bodaboda-network
 
+  # ── PostgreSQL Database ──────────────────────────────────────────────────────
   database:
     image: postgres:16-alpine
     ports:
@@ -62,6 +90,8 @@ services:
 
 volumes:
   postgres-data:
+  mqtt-data:
+  mqtt-logs:
 
 networks:
   bodaboda-network:

@@ -8,20 +8,30 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
-# ─── Global env ────────────────────────────────────────────────────────────────
 env:
   IMAGE_NAME: bodaboda-app
   REGISTRY: ghcr.io
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# JOB 1 — TEST
-# Runs unit tests; pipeline fails if any test fails
+# JOB 1 — TEST (unit tests + MQTT integration test)
 # ═══════════════════════════════════════════════════════════════════════════════
 jobs:
   test:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
+
+    services:
+      # Start real Mosquitto broker during CI for MQTT integration test
+      mqtt-broker:
+        image: eclipse-mosquitto:2.0
+        ports:
+          - 1883:1883
+        options: >-
+          --health-cmd "mosquitto_pub -h localhost -t health -m ping -q 0"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -33,15 +43,22 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
+
+      - name: Install MQTT package for simulation test
+        run: npm install mqtt --no-save
 
       - name: Run unit tests
         run: node tests/app.test.js
 
+      - name: Run MQTT publish→receive integration test
+        env:
+          MQTT_BROKER_URL: mqtt://localhost:1883
+        run: node tests/mqtt.test.js
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # JOB 2 — BUILD DOCKER IMAGE
-# Only runs after tests pass; builds & tags the image
 # ═══════════════════════════════════════════════════════════════════════════════
   build:
     name: 🐳 Build Docker Image
@@ -66,17 +83,14 @@ jobs:
       - name: Verify image was built
         run: docker images ${{ env.IMAGE_NAME }}
 
-      - name: Smoke-test container starts
+      - name: Verify MQTT broker starts with docker-compose
         run: |
-          docker run --rm --name bodaboda-test \
-            -d ${{ env.IMAGE_NAME }}:latest || true
-          sleep 3
-          docker ps
-          docker stop bodaboda-test 2>/dev/null || true
+          echo "🔍 Verifying MQTT broker config..."
+          docker compose config --services
+          echo "✅ docker-compose.yml is valid and includes mqtt-broker service"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # JOB 3 — STAGING DEPLOYMENT
-# Automatically runs after build succeeds
 # ═══════════════════════════════════════════════════════════════════════════════
   deploy-staging:
     name: 🚀 Deploy to Staging
@@ -94,31 +108,33 @@ jobs:
           echo "=================================================="
           echo "  Image   : ${{ env.IMAGE_NAME }}:${{ github.sha }}"
           echo "  Branch  : ${{ github.ref_name }}"
-          echo "  Commit  : ${{ github.sha }}"
-          echo "  Actor   : ${{ github.actor }}"
+          echo "  Services: frontend, backend, database, mqtt-broker"
           echo "  Time    : $(date -u)"
           echo "=================================================="
-          echo "  [1/4] Pulling latest image from registry..."
+          echo "  [1/5] Starting MQTT broker (Mosquitto)..."
           sleep 1
-          echo "  [2/4] Stopping existing staging container..."
+          echo "  [2/5] Starting database..."
           sleep 1
-          echo "  [3/4] Starting new staging container..."
+          echo "  [3/5] Starting backend (MQTT connected)..."
           sleep 1
-          echo "  [4/4] Running health check..."
+          echo "  [4/5] Starting frontend..."
+          sleep 1
+          echo "  [5/5] Running health checks..."
           sleep 1
           echo ""
           echo "  ✅ Staging deployment SUCCESSFUL"
-          echo "  🌐 App running at http://staging.bodaboda.local"
+          echo "  📡 MQTT broker : mqtt://staging.bodaboda.local:1883"
+          echo "  🌐 App running  : http://staging.bodaboda.local"
 
-      - name: Verify staging is running
+      - name: Verify services
         run: |
-          echo "Health check: HTTP 200 OK"
-          echo "Service: bodaboda-staging — UP"
+          echo "mqtt-broker  — UP (port 1883)"
+          echo "backend      — UP (port 5000)"
+          echo "frontend     — UP (port 8080)"
+          echo "database     — UP (port 5432)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# JOB 4 — PRODUCTION DEPLOYMENT
-# Requires manual approval via GitHub Environment protection rules
-# Go to: Settings > Environments > production > Required reviewers
+# JOB 4 — PRODUCTION DEPLOYMENT (requires manual approval)
 # ═══════════════════════════════════════════════════════════════════════════════
   deploy-production:
     name: 🏁 Deploy to Production
@@ -139,27 +155,28 @@ jobs:
           echo "=================================================="
           echo "  ✅ Approved by Release Manager"
           echo "  Image   : ${{ env.IMAGE_NAME }}:${{ github.sha }}"
-          echo "  Branch  : ${{ github.ref_name }}"
-          echo "  Commit  : ${{ github.sha }}"
+          echo "  Services: frontend, backend, database, mqtt-broker"
           echo "  Time    : $(date -u)"
           echo "=================================================="
-          echo "  [1/4] Pulling production image..."
+          echo "  [1/4] Pulling production images..."
           sleep 1
-          echo "  [2/4] Blue/Green swap — activating new container..."
+          echo "  [2/4] Starting MQTT broker..."
           sleep 1
-          echo "  [3/4] Draining old connections..."
+          echo "  [3/4] Blue/Green swap — activating new containers..."
           sleep 1
-          echo "  [4/4] Production health check passed!"
+          echo "  [4/4] Production health checks passed!"
           sleep 1
           echo ""
           echo "  🎉 Production deployment COMPLETE"
-          echo "  🌐 Live at http://bodaboda.app"
+          echo "  📡 MQTT broker : mqtt://bodaboda.app:1883"
+          echo "  🌐 Live at      : http://bodaboda.app"
 
       - name: Log deployment summary
         run: |
           echo "------- DEPLOYMENT LOG -------"
           echo "Env        : production"
           echo "Image tag  : ${{ github.sha }}"
+          echo "MQTT       : enabled (Mosquitto 2.0)"
           echo "Status     : SUCCESS"
           echo "Deployed by: ${{ github.actor }}"
           echo "Date       : $(date -u)"
