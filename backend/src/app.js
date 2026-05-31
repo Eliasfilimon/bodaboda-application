@@ -16,6 +16,8 @@ import tripRoutes from './routes/trips.js';
 import notificationRoutes from './routes/notifications.js';
 import { setupAssociations } from './models/index.js';
 import { seedDatabase } from './utils/seedDatabase.js';
+import { connectMQTT } from './mqtt/mqttClient.js';
+import mqttRoutes from './mqtt/mqttRoutes.js';
 
 const app = express();
 const server = createServer(app);
@@ -55,6 +57,7 @@ app.use('/api/riders', riderRoutes);
 app.use('/api/rider-auth', riderAuthRoutes);
 app.use('/api/trips', tripRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/mqtt', mqttRoutes);
 
 app.get('/metrics', async (req, res) => { res.set('Content-Type', register.contentType); res.end(await register.metrics()); });
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
@@ -70,6 +73,14 @@ const start = async () => {
   await connectDB();
   setupAssociations();
   if (process.env.SEED_DB === 'true') await seedDatabase();
+
+  // Connect to MQTT broker (non-blocking — app still starts if broker is unavailable)
+  try {
+    connectMQTT();
+  } catch (err) {
+    console.warn('[mqtt] Could not connect to broker:', err.message);
+  }
+
   server.listen(PORT, () => console.log(`[server] running on port ${PORT}`));
 };
 
