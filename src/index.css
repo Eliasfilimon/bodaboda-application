@@ -6,14 +6,14 @@
 
 body {
   margin: 0;
-  background-color: #F7F4EF;
-  color: #123A55;
+  background-color: #F3F4F6;
+  color: #1A1A2E;
 }
 
 /* Dark mode support */
 .dark body {
-  background-color: #0A1628;
-  color: #F7F4EF;
+  background-color: #1A1A2E;
+  color: #F3F4F6;
 }
 
 /* Custom scrollbar */
@@ -27,16 +27,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1C7B7;
+  background: #6B7280;
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #2A3A4F;
+  background: #4B5563;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #B8AE9E;
+  background: #00A651;
 }
 
 /* Leaflet map dark mode */

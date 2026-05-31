@@ -24,8 +24,9 @@ export const ProtectedRoute = ({ children, requiredType }) => {
   }
 
   if (requiredType && userType !== requiredType) {
-    // Rider trying to access user-only page or vice versa
-    return <Navigate to="/" replace />;
+    if (userType === 'admin') return <Navigate to="/admin/dashboard" replace />;
+    if (userType === 'rider') return <Navigate to="/rider/dashboard" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;

@@ -1,11 +1,11 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { BottomNav } from "./components/BottomNav";
 import { OfflineBanner } from "./components/OfflineBanner";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { useAuth } from "./context/AuthContext";
 import { HomePage } from "./pages/HomePage";
 import { RequestRidePage } from "./pages/RequestRidePage";
-import { RiderDashboardPage } from "./pages/RiderDashboardPage";
 import { TrackRidePage } from "./pages/TrackRidePage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -17,9 +17,17 @@ import { RateTripPage } from "./pages/RateTripPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PaymentPage } from "./pages/PaymentPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
-import { AdminDashboardPage } from "./pages/AdminDashboardPage";
+import { RiderDashboard } from "./pages/RiderDashboard";
+import { AdminDashboard } from "./pages/AdminDashboard";
 
 function App() {
+  const { userType } = useAuth();
+  const dashboardElement = userType === "admin"
+    ? <Navigate to="/admin/dashboard" replace />
+    : userType === "rider"
+      ? <Navigate to="/rider/dashboard" replace />
+      : <RequestRidePage />;
+
   return (
     <div className="min-h-screen bg-sand-50 font-jakarta pb-20 md:pb-0">
       <OfflineBanner />
@@ -31,8 +39,14 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/rider-register" element={<RiderRegisterPage />} />
         <Route path="/rider-login" element={<RiderLoginPage />} />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
         {/* Protected - any authenticated user */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            {dashboardElement}
+          </ProtectedRoute>
+        } />
         <Route path="/request" element={
           <ProtectedRoute requiredType="user">
             <RequestRidePage />
@@ -70,16 +84,16 @@ function App() {
         } />
 
         {/* Protected - rider only */}
-        <Route path="/dashboard" element={
+        <Route path="/rider/dashboard" element={
           <ProtectedRoute requiredType="rider">
-            <RiderDashboardPage />
+            <RiderDashboard />
           </ProtectedRoute>
         } />
 
-        {/* Admin - open in dev, protect with role in production */}
-        <Route path="/admin" element={
-          <ProtectedRoute>
-            <AdminDashboardPage />
+        {/* Admin protected route */}
+        <Route path="/admin/dashboard" element={
+          <ProtectedRoute requiredType="admin">
+            <AdminDashboard />
           </ProtectedRoute>
         } />
 

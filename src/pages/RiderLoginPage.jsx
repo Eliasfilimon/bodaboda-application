@@ -12,7 +12,7 @@ export const RiderLoginPage = () => {
     e.preventDefault();
     try {
       await riderLogin(phone);
-      navigate("/dashboard");
+      navigate("/rider/dashboard");
     } catch (error) {
       alert(error.error || 'Login failed');
     }

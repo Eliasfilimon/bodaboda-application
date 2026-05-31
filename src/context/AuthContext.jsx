@@ -2,6 +2,14 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../config/api.js';
 
 const AuthContext = createContext();
+const ADMIN_PHONES = ['+255700000999', '0700000999'];
+
+const inferRole = (response, phone, fallback = 'user') => {
+  const role = response?.role || response?.user?.role || response?.rider?.role;
+  if (role) return role;
+  if (ADMIN_PHONES.includes(phone)) return 'admin';
+  return fallback;
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -31,13 +39,24 @@ export const AuthProvider = ({ children }) => {
   const login = async (phone) => {
     try {
       const response = await api.auth.login({ phone });
+      const role = inferRole(response, phone, 'user');
       setToken(response.token);
-      setUser(response.user);
-      setRider(null);
-      setUserType('user');
+      setUserType(role);
       localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', 'user');
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('userType', role);
+
+      if (role === 'rider') {
+        const riderProfile = response.rider || response.user;
+        setRider(riderProfile);
+        setUser(null);
+        localStorage.setItem('rider', JSON.stringify(riderProfile));
+        localStorage.removeItem('user');
+      } else {
+        setUser(response.user);
+        setRider(null);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.removeItem('rider');
+      }
       return response;
     } catch (error) {
       throw error;

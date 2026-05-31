@@ -409,6 +409,11 @@ export const api = {
   },
 
   trips: {
+    getAll: () => withFallback(
+      () => requestJson("/trips", { headers: getHeaders() }),
+      () => mockSuccess(loadDb().trips)
+    ),
+
     create: (data, token) => withFallback(
       () => requestJson("/trips", {
         method: "POST",
@@ -558,4 +563,3 @@ export const api = {
     ),
   },
 };
-
