@@ -2,12 +2,11 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../config/api.js';
 
 const AuthContext = createContext();
-const ADMIN_PHONES = ['+255700000999', '0700000999'];
+const validRoles = new Set(['user', 'rider', 'admin']);
 
-const inferRole = (response, phone, fallback = 'user') => {
+const inferRole = (response, fallback = 'user') => {
   const role = response?.role || response?.user?.role || response?.rider?.role;
-  if (role) return role;
-  if (ADMIN_PHONES.includes(phone)) return 'admin';
+  if (role && validRoles.has(role)) return role;
   return fallback;
 };
 
@@ -39,7 +38,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (phone) => {
     try {
       const response = await api.auth.login({ phone });
-      const role = inferRole(response, phone, 'user');
+      const role = inferRole(response, 'user');
       setToken(response.token);
       setUserType(role);
       localStorage.setItem('token', response.token);

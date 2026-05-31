@@ -1,12 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import mqtt from "mqtt";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../config/api.js";
 
 const toCurrency = (value) => `TZS ${Number(value || 0).toLocaleString()}`;
+const getMqttWsUrl = () => {
+  const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const host = window.location.hostname || "localhost";
+  return import.meta.env.VITE_MQTT_WS_URL || `${wsProtocol}://${host}:9001/mqtt`;
+};
 
 export const RiderDashboard = () => {
   const { rider } = useAuth();
+  const mqttClientRef = useRef(null);
   const [isOnline, setIsOnline] = useState(true);
   const [incomingRequest, setIncomingRequest] = useState(null);
   const [activeTrip, setActiveTrip] = useState(null);
@@ -27,10 +33,8 @@ export const RiderDashboard = () => {
   }, [rider]);
 
   useEffect(() => {
-    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const host = window.location.hostname || "localhost";
-    const mqttUrl = import.meta.env.VITE_MQTT_WS_URL || `${wsProtocol}://${host}:9001/mqtt`;
-    const client = mqtt.connect(mqttUrl, { reconnectPeriod: 2000, connectTimeout: 5000 });
+    const client = mqtt.connect(getMqttWsUrl(), { reconnectPeriod: 2000, connectTimeout: 5000 });
+    mqttClientRef.current = client;
 
     client.on("connect", () => {
       setMqttStatus("Connected");
@@ -48,7 +52,10 @@ export const RiderDashboard = () => {
       }
     });
 
-    return () => client.end(true);
+    return () => {
+      client.end(true);
+      mqttClientRef.current = null;
+    };
   }, []);
 
   const stats = useMemo(() => {
@@ -72,24 +79,20 @@ export const RiderDashboard = () => {
     };
   }, [recentTrips]);
 
-  const publishRideStatus = (status, trip = activeTrip || incomingRequest) => {
-    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
-    const host = window.location.hostname || "localhost";
-    const mqttUrl = import.meta.env.VITE_MQTT_WS_URL || `${wsProtocol}://${host}:9001/mqtt`;
-    const client = mqtt.connect(mqttUrl, { reconnectPeriod: 0 });
-    client.on("connect", () => {
-      client.publish("bodaboda/ride/status", JSON.stringify({
-        status,
-        riderId: rider?.id,
-        riderName: rider?.name,
-        tripId: trip?.tripId || trip?.id || null,
-        passengerName: trip?.passengerName || trip?.customer || "Passenger",
-        pickup: trip?.pickup,
-        destination: trip?.destination || trip?.dropoff,
-        updatedAt: new Date().toISOString(),
-      }));
-      client.end(true);
-    });
+  const publishRideStatus = (status, trip) => {
+    const tripData = trip || activeTrip || incomingRequest;
+    const client = mqttClientRef.current;
+    if (!client || !client.connected) return;
+    client.publish("bodaboda/ride/status", JSON.stringify({
+      status,
+      riderId: rider?.id,
+      riderName: rider?.name,
+      tripId: tripData?.tripId || tripData?.id || null,
+      passengerName: tripData?.passengerName || tripData?.customer || "Passenger",
+      pickup: tripData?.pickup,
+      destination: tripData?.destination || tripData?.dropoff,
+      updatedAt: new Date().toISOString(),
+    }));
   };
 
   const toggleOnline = async () => {

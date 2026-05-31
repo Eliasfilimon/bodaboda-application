@@ -17,7 +17,7 @@ export const LoginPage = () => {
 
     try {
       const response = await login(phone);
-      const role = response?.role || response?.user?.role || (["+255700000999", "0700000999"].includes(phone) ? "admin" : "user");
+      const role = response?.role || response?.user?.role || "user";
       if (role === "admin") {
         navigate("/admin/dashboard");
       } else if (role === "rider") {

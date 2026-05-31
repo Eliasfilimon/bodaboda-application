@@ -36,7 +36,7 @@ export const Navbar = () => {
     rider: [
       { to: "/rider/dashboard", label: "Dashboard" },
       { to: "/history", label: "My Trips" },
-      { to: "/rider/dashboard#earnings", label: "Earnings" },
+      { to: "/rider/dashboard", label: "Earnings" },
       { to: "/profile", label: "Profile" },
     ],
     admin: [
