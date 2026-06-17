@@ -15,6 +15,19 @@ export const SOSButton = ({ trip, location, user }) => {
   const [alertSent, setAlertSent] = useState(false);
   const { t } = useLanguage();
 
+  const sendEmergencySMS = async (data, contacts) => {
+    const message = `🚨 EMERGENCY ALERT from BodaBoda Digital\n\n` +
+      `User: ${data.userName}\n` +
+      `Phone: ${data.userPhone}\n` +
+      `Location: ${data.address}\n` +
+      `Coordinates: ${data.location?.lat}, ${data.location?.lng}\n` +
+      `Time: ${new Date().toLocaleString()}\n\n` +
+      `Please contact user immediately or call police: 112`;
+
+    console.log("SMS placeholder:", message, contacts);
+    // SMS integration placeholder - connect to Twilio/AfricasTalking API
+  };
+
   const handleSOS = useCallback(async () => {
     setIsSending(true);
     
@@ -78,17 +91,7 @@ export const SOSButton = ({ trip, location, user }) => {
     }
   }, [trip, location, user]);
 
-  const sendEmergencySMS = async (data, contacts) => {
-    const message = `🚨 EMERGENCY ALERT from BodaBoda Digital\n\n` +
-      `User: ${data.userName}\n` +
-      `Phone: ${data.userPhone}\n` +
-      `Location: ${data.address}\n` +
-      `Coordinates: ${data.location?.lat}, ${data.location?.lng}\n` +
-      `Time: ${new Date().toLocaleString()}\n\n` +
-      `Please contact user immediately or call police: 112`;
 
-    // SMS integration placeholder - connect to Twilio/AfricasTalking API
-  };
 
   const handleCall = (number) => {
     window.location.href = `tel:${number}`;

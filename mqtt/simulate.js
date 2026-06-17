@@ -13,6 +13,7 @@
  */
 
 import mqtt from 'mqtt';
+import process from 'node:process';
 
 const BROKER = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiWifi, FiWifiOff } from 'react-icons/fi';
+import { FiWifiOff } from 'react-icons/fi';
 
 export const OfflineBanner = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);

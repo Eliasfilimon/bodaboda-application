@@ -1,18 +1,15 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { useState, useCallback, createContext, useContext } from 'react';
 import { FiBell, FiInfo } from 'react-icons/fi';
-import { HiOutlineCheckCircle, HiOutlineXMark, HiOutlineCheck, HiOutlineExclamationTriangle } from 'react-icons/hi2';
+import { HiOutlineCheckCircle, HiOutlineXMark, HiOutlineExclamationTriangle } from 'react-icons/hi2';
 
 const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
-  const [permission, setPermission] = useState('default');
-
-  useEffect(() => {
-    if ('Notification' in window) {
-      setPermission(Notification.permission);
-    }
-  }, []);
+  const [permission, setPermission] = useState(() => 
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
+  );
 
   const requestPermission = useCallback(async () => {
     if (!('Notification' in window)) return false;
@@ -20,6 +17,20 @@ export const NotificationProvider = ({ children }) => {
     const result = await Notification.requestPermission();
     setPermission(result);
     return result === 'granted';
+  }, []);
+
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  const markAsRead = useCallback((id) => {
+    setNotifications(prev => 
+      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    );
+  }, []);
+
+  const clearAll = useCallback(() => {
+    setNotifications([]);
   }, []);
 
   const showNotification = useCallback((options) => {
@@ -65,21 +76,7 @@ export const NotificationProvider = ({ children }) => {
     }
 
     return id;
-  }, [permission]);
-
-  const removeNotification = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
-
-  const markAsRead = useCallback((id) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-  }, []);
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-  }, []);
+  }, [permission, removeNotification]);
 
   // Trip-specific notifications
   const notifyTripUpdate = useCallback((trip, update) => {
@@ -141,7 +138,6 @@ export const NotificationProvider = ({ children }) => {
       <NotificationContainer 
         notifications={notifications} 
         onRemove={removeNotification}
-        onMarkRead={markAsRead}
       />
     </NotificationContext.Provider>
   );
@@ -156,7 +152,7 @@ export const useNotifications = () => {
 };
 
 // Notification Container Component
-const NotificationContainer = ({ notifications, onRemove, onMarkRead }) => {
+const NotificationContainer = ({ notifications, onRemove }) => {
   const getIcon = (icon) => {
     switch (icon) {
       case 'rider': return <HiOutlineCheckCircle className="w-5 h-5 text-green-500" />;
