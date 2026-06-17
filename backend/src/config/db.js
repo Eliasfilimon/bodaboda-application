@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize';
+import process from 'node:process';
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',

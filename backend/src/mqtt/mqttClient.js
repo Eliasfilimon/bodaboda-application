@@ -7,6 +7,7 @@
  */
 
 import mqtt from 'mqtt';
+import process from 'node:process';
 
 const BROKER_URL = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883';
 
@@ -55,7 +56,7 @@ export function connectMQTT() {
       const payload = JSON.parse(message.toString());
       console.log(`[MQTT] 📨 Message on [${topic}]:`, payload);
       handleIncomingMessage(topic, payload);
-    } catch (e) {
+    } catch {
       console.warn('[MQTT] ⚠️ Non-JSON message on', topic, message.toString());
     }
   });

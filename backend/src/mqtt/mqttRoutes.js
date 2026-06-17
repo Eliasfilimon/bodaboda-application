@@ -8,6 +8,7 @@
 
 import express from 'express';
 import { publishMessage, TOPICS } from './mqttClient.js';
+import process from 'node:process';
 
 const router = express.Router();
 

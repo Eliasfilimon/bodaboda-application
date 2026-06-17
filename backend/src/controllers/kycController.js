@@ -1,5 +1,4 @@
 import multer from 'multer';
-import path from 'path';
 import { Rider } from '../models/index.js';
 
 // Configure Multer for local uploads (mocking S3 for now)

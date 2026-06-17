@@ -1,3 +1,4 @@
+/* global describe, afterAll, test, expect */
 import request from 'supertest';
 import app from '../src/app.js';
 import sequelize from '../src/config/db.js';

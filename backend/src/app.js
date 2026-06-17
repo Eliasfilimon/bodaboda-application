@@ -75,6 +75,7 @@ app.get('/metrics', async (req, res) => { res.set('Content-Type', register.conte
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
 app.get('/', (_req, res) => res.json({ message: 'Boda Boda Digital API v2', version: '2.0.0' }));
 
+// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   console.error('[error]', err.message);
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });

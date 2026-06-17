@@ -12,6 +12,7 @@
  */
 
 import mqtt from 'mqtt';
+import process from 'node:process';
 
 const BROKER = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883';
 
@@ -102,12 +103,10 @@ async function runSimulation() {
   log.title('OPTION B: Driver Location Updates (Live Route)');
 
   passenger.subscribe(TOPICS.DRIVER_LOCATION);
-  let locationCount = 0;
   passenger.on('message', (topic, msg) => {
     if (topic === TOPICS.DRIVER_LOCATION) {
       const data = JSON.parse(msg.toString());
       log.sub(topic, data);
-      locationCount++;
     }
   });
 
