@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: Boda Boda Digital API
+  description: Backend REST API for the Boda Boda Digital ride-hailing application.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Local Development Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /auth/register:
+    post:
+      summary: Register a new customer
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - phone
+                - password
+              properties:
+                name:
+                  type: string
+                phone:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Bad request or user already exists
+  /auth/login:
+    post:
+      summary: Customer login
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - password
+              properties:
+                phone:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+  /trips:
+    post:
+      summary: Request a new trip
+      tags:
+        - Trips
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pickup
+                - pickupCoords
+                - dropoff
+                - dropoffCoords
+              properties:
+                pickup:
+                  type: string
+                pickupCoords:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+                dropoff:
+                  type: string
+                dropoffCoords:
+                  type: object
+                  properties:
+                    lat:
+                      type: number
+                    lng:
+                      type: number
+                paymentMethod:
+                  type: string
+                  default: 'Cash'
+      responses:
+        '201':
+          description: Trip requested successfully
+  /kyc/upload:
+    post:
+      summary: Upload KYC documents (Driver License/ID)
+      tags:
+        - Rider Verification (KYC)
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                document:
+                  type: string
+                  format: binary
+                documentType:
+                  type: string
+                  enum: [license, id_card, insurance]
+      responses:
+        '200':
+          description: Document uploaded successfully

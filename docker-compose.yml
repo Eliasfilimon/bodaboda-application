@@ -1,0 +1,112 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# LOCAL DEVELOPMENT  — mirrors the AWS architecture locally
+#   PostgreSQL  →  AWS RDS PostgreSQL 16
+#   Backend     →  AWS ECS Fargate (bodaboda-backend)
+#   MQTT        →  AWS ECS Fargate or EC2 (Mosquitto)
+#   Frontend    →  AWS S3 + CloudFront  (built static files)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL (mirrors AWS RDS) ────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: bodaboda_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       bodaboda
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # No host port mapping needed - backend connects internally via Docker network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Node.js Backend (mirrors AWS ECS Fargate task) ──────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bodaboda_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV:        development
+      PORT:            5000
+      DATABASE_URL:    postgresql://postgres:postgres@db:5432/bodaboda
+      JWT_SECRET:      local_dev_secret
+      MQTT_BROKER_URL: mqtt://mqtt:1883
+      CORS_ORIGIN:     http://localhost:8003,http://localhost:5173
+    ports:
+      - "8001:5000"
+    command: node src/app.js
+
+  # ── MQTT Broker (Mosquitto) ──────────────────────────────────────────────────
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: bodaboda_mqtt
+    restart: unless-stopped
+    volumes:
+      - ./mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - "1883:1883"
+      - "9010:9001"
+
+  # ── React Frontend (Vite dev server — for local only) ────────────────────────
+  # In production this is a static build uploaded to S3 + served via CloudFront
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bodaboda_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8003:80"
+    environment:
+      VITE_API_URL:  http://localhost:8001/api
+      VITE_MQTT_WS:  ws://host.docker.internal:9010
+
+  # ── Prometheus (Metrics Collection) ───────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: bodaboda_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9092:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  # ── Grafana (Metrics Dashboard) ──────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bodaboda_grafana
+    restart: unless-stopped
+    ports:
+      - "3010:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:

@@ -1,0 +1,49 @@
+{
+  "name": "boda-boda-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Boda Boda Digital ride-hailing app",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "db:setup": "node scripts/createDb.js",
+    "db:seed": "node scripts/seedData.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "keywords": [
+    "boda-boda",
+    "ride-hailing",
+    "express",
+    "postgresql",
+    "socket.io",
+    "mqtt"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.0",
+    "google-auth-library": "^9.4.0",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "mqtt": "^5.10.1",
+    "multer": "^2.2.0",
+    "pg": "^8.20.0",
+    "pg-hstore": "^2.3.4",
+    "prom-client": "^15.1.3",
+    "sequelize": "^6.37.8",
+    "socket.io": "^4.6.0",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.0.1",
+    "supertest": "^7.2.2"
+  }
+}

@@ -1,0 +1,86 @@
+name: Staging Deployment Pipeline
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  test-staging:
+    name: 🧪 Run Staging Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Tests
+        run: npm test
+
+  publish-staging:
+    name: 🐳 Push to Docker Hub (Staging)
+    runs-on: ubuntu-latest
+    needs: test-staging
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Extract Metadata for Backend (Staging)
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/bodaboda-backend
+          tags: type=raw,value=staging
+
+      - name: Build and Push Backend Image (Staging)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+
+      - name: Extract Metadata for Frontend (Staging)
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/bodaboda-frontend
+          tags: type=raw,value=staging
+
+      - name: Build and Push Frontend Image (Staging)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+
+  deploy-staging:
+    name: 🚀 Deploy to Staging Server
+    runs-on: ubuntu-latest
+    needs: publish-staging
+    steps:
+      - name: Deploy to Staging Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_SERVER_HOST }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          key: ${{ secrets.STAGING_SERVER_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/bodaboda-backend:staging
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/bodaboda-frontend:staging
+            cd /path/to/staging/deployment
+            docker compose down
+            docker compose up -d
+            echo "Staging Deployment Completed."
