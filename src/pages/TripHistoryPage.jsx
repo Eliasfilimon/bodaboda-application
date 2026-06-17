@@ -5,7 +5,7 @@ import { api } from '../config/api.js';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { FaMotorcycle } from 'react-icons/fa';
-import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineUser, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineStar, HiOutlineMapPin, HiOutlineCreditCard, HiOutlineCalendarDays } from 'react-icons/hi2';
+import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineUser, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineStar, HiOutlineCreditCard, HiOutlineCalendarDays } from 'react-icons/hi2';
 
 const STATUS_STYLE = {
   completed: { bg: 'bg-twende-success/10 text-twende-success', Icon: HiOutlineCheckCircle },
@@ -24,7 +24,9 @@ export const TripHistoryPage = () => {
   const isRider = userType === 'rider';
 
   const fetchTrips = useCallback(async () => {
-    if (!token) { setLoading(false); return; }
+    if (!token) {
+
+      setLoading(false); return; }
     try {
       let data;
       if (isRider) {
@@ -46,8 +48,9 @@ export const TripHistoryPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [token, user?.id, rider?.id, isRider]);
+  }, [token, user, rider, isRider]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchTrips(); }, [fetchTrips]);
 
   const handleRetry = () => { setError(null); setLoading(true); fetchTrips(); };

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback } from 'react';
 
 const translations = {
@@ -51,7 +52,7 @@ const translations = {
     
     // Status
     pending: 'Pending',
-    inProgress: 'In Progress',
+
     completed: 'Completed',
     cancelled: 'Cancelled',
     online: 'Online',
@@ -170,7 +171,7 @@ const translations = {
     
     // Status
     pending: 'Inasubiri',
-    inProgress: 'Inaendelea',
+
     completed: 'Imekamilika',
     cancelled: 'Imeghairiwa',
     online: 'Mtandaoni',

@@ -8,8 +8,7 @@ const MQTT_WS = import.meta.env.VITE_MQTT_WS || 'ws://localhost:9010';
 export function MqttDemoPage() {
   const [connected, setConnected] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [testMessage, setTestMessage] = useState('');
-  const mqttRef = useRef(null);
+    const mqttRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -32,6 +31,7 @@ export function MqttDemoPage() {
         const data = JSON.parse(payload.toString());
         addLog(`📨 ${topic}`, 'received', data);
       } catch (e) {
+      console.error(e);
         addLog(`📨 ${topic}: ${payload.toString()}`, 'received');
       }
     });
@@ -48,7 +48,7 @@ export function MqttDemoPage() {
     return () => client.end();
   }, []);
 
-  const addLog = (text, type, data = null) => {
+  function addLog(text, type, data = null) {
     const timestamp = new Date().toLocaleTimeString();
     setMessages(prev => [...prev, { text, type, timestamp, data }]);
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

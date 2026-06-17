@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { FiPhoneOff, FiMic, FiMicOff, FiVolume2 } from 'react-icons/fi';
 import { useLanguage } from '../context/LanguageContext';
-import { HiOutlinePhone, HiOutlineXMark } from 'react-icons/hi2';
+import { HiOutlinePhone } from 'react-icons/hi2';
 
 export const VoiceCallButton = ({ phoneNumber, name, size = 'md' }) => {
   const [isCalling, setIsCalling] = useState(false);
@@ -150,7 +150,7 @@ export const VoiceCallButton = ({ phoneNumber, name, size = 'md' }) => {
 };
 
 export const ContactButtons = ({ phoneNumber, name, onMessage }) => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="flex items-center gap-2">

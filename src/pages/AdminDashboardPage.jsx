@@ -38,6 +38,7 @@ export function AdminDashboardPage() {
     setLoading(false);
   }, [apiFetch]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const patchRider = async (id, endpoint, newStatus) => {
@@ -80,7 +81,7 @@ export function AdminDashboardPage() {
     { key: 'passengers', icon: <HiOutlineUsers />, label: 'Passengers' },
   ];
 
-  const Sidebar = ({ onClose }) => (
+  const renderSidebar = (onClose) => (
     <div className="flex flex-col h-full bg-white">
       <div className="px-6 py-6 border-b border-twende-border flex items-center justify-between">
         <div>
@@ -122,7 +123,7 @@ export function AdminDashboardPage() {
 
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 min-h-screen fixed left-0 top-0 bottom-0 z-40 border-r border-twende-border bg-white">
-        <Sidebar />
+        {renderSidebar()}
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -130,7 +131,7 @@ export function AdminDashboardPage() {
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-twende-text/20 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-white shadow-2xl">
-            <Sidebar onClose={() => setSidebarOpen(false)} />
+            {renderSidebar(() => setSidebarOpen(false))}
           </aside>
         </div>
       )}

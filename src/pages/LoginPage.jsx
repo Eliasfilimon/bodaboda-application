@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaMotorcycle } from 'react-icons/fa';
 
-import { HiOutlineArrowLeft, HiOutlineArrowRight, HiOutlinePhone, HiOutlineArrowPath } from 'react-icons/hi2';
+import { HiOutlineArrowLeft, HiOutlineArrowPath } from 'react-icons/hi2';
 
 export function LoginPage() {
   const navigate  = useNavigate();
@@ -13,9 +13,8 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // Future OTP state expansion
-  const [step, setStep] = useState('phone'); // 'phone' | 'otp'
-  const [otp, setOtp] = useState('');
-
+  const [step] = useState('phone'); // 'phone' | 'otp'
+  
   const handlePhoneSubmit = async (e) => {
     e.preventDefault();
     if (phone.length < 9) {

@@ -4,13 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../config/api.js';
 import { useGeolocation } from '../hooks/useGeolocation.js';
 import mqtt from 'mqtt';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { FaMotorcycle, FaPhone } from 'react-icons/fa';
+import { FaPhone } from 'react-icons/fa';
 
 
 import 'leaflet/dist/leaflet.css';
-import { HiOutlineClock, HiOutlineStar, HiOutlinePaperAirplane, HiOutlineMapPin, HiOutlineBars3, HiOutlineArrowRightOnRectangle, HiOutlineMap } from 'react-icons/hi2';
+import { HiOutlineStar, HiOutlinePaperAirplane, HiOutlineBars3, HiOutlineArrowRightOnRectangle } from 'react-icons/hi2';
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -55,10 +55,9 @@ export function RiderDashboardPage() {
   const [tripState, setTripState]           = useState(TRIP_STATUS.IDLE);
   const [currentRequest, setCurrentRequest] = useState(null);
   const [activeTrip, setActiveTrip]         = useState(null);
-  const [recentTrips, setRecentTrips]       = useState([]);
+
   const [earnings, setEarnings]             = useState({ today: 0, week: 0, total: 0 });
-  const [tripCount, setTripCount]           = useState(0);
-  const [mqttConnected, setMqttConnected]   = useState(false);
+
   const [toast, setToast]                   = useState(null);
   const [loading, setLoading]               = useState(false);
   const [gpsStatus, setGpsStatus]           = useState('off');
@@ -70,13 +69,11 @@ export function RiderDashboardPage() {
 
   useEffect(() => { if (!token) navigate('/rider-login'); }, [token, navigate]);
 
-  const loadTrips = () => {
+  const loadTrips = useCallback(() => {
     if (!rider?.id) return;
     api.trips.getRiderTrips(rider.id)
       .then(data => {
         const trips = Array.isArray(data) ? data : [];
-        setRecentTrips(trips.slice(0, 5));
-        setTripCount(trips.length);
         const done = trips.filter(t => t.status === 'completed');
         const total = done.reduce((s, t) => s + parseFloat(t.fare || 0), 0);
         const todayStr = new Date().toDateString();
@@ -86,9 +83,9 @@ export function RiderDashboardPage() {
         setEarnings({ today: todayFare, week: total * 0.3, total });
       })
       .catch(() => {});
-  };
+  }, [rider]);
 
-  useEffect(() => { loadTrips(); }, [rider?.id]);
+  useEffect(() => { loadTrips(); }, [rider, loadTrips]);
 
   useEffect(() => {
     if (!rider?.id) return; 
@@ -100,12 +97,11 @@ export function RiderDashboardPage() {
     mqttRef.current = client;
     
     client.on('connect', () => {
-      setMqttConnected(true);
       client.subscribe('bodaboda/ride/request');
       client.subscribe(`bodaboda/rider/${rider?.id}/request`);
     });
     
-    client.on('error', () => setMqttConnected(false));
+    client.on('error', () => {});
     client.on('message', (_topic, payload) => {
       if (!online) return; 
       try {
@@ -114,11 +110,11 @@ export function RiderDashboardPage() {
           setCurrentRequest(data);
           setTripState(TRIP_STATUS.REQUEST);
         }
-      } catch (e) {}
+      } catch (e) { console.error(e); }
     });
     
-    client.on('close', () => setMqttConnected(false));
-    client.on('offline', () => setMqttConnected(false));
+    client.on('close', () => {});
+    client.on('offline', () => {});
     return () => client.end();
   }, [rider?.id, online, tripState]);
 
@@ -140,8 +136,8 @@ export function RiderDashboardPage() {
         timestamp: location.timestamp,
       }));
       setGpsStatus('active');
-    } catch (err) {}
-  }, [rider?.id, rider?.name, online]);
+    } catch (err) { console.error(err); }
+  }, [rider, online]);
 
   const { position, error: gpsError, loading: gpsLoading } = useGeolocation({
     enabled: online,
@@ -150,6 +146,7 @@ export function RiderDashboardPage() {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (gpsError) setGpsStatus('error');
     else if (gpsLoading) setGpsStatus('searching');
     else if (position) setGpsStatus('active');
@@ -170,15 +167,16 @@ export function RiderDashboardPage() {
             setOnline(true);
             setGpsStatus('active');
           } catch (err) {
+            console.error(err);
             showToast('Failed to update location', 'warning');
           }
         },
-        async (err) => {
+        async () => {
           try {
             await api.riders.updateStatus(rider.id, { status: 'online' });
             setOnline(true);
             setGpsStatus('error');
-          } catch (err) {}
+          } catch (err) { console.error(err); }
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
@@ -189,7 +187,7 @@ export function RiderDashboardPage() {
       await api.riders.updateStatus(rider.id, { status: newStatus });
       setOnline(!online);
       if (newStatus === 'offline') setGpsStatus('off');
-    } catch (err) {}
+    } catch (err) { console.error(err); }
   };
 
   const handleAccept = async () => {
@@ -206,6 +204,7 @@ export function RiderDashboardPage() {
       setCurrentRequest(null);
       publish('bodaboda/ride/status', { ...trip, event: 'accepted', riderId: rider?.id });
     } catch (err) {
+      console.error(err);
       showToast('Could not accept ride.', 'error');
     } finally {
       setLoading(false);
@@ -220,6 +219,7 @@ export function RiderDashboardPage() {
       if (tripId) await api.trips.decline(tripId, rider?.id);
       publish('bodaboda/ride/status', { tripId, event: 'declined', riderId: rider?.id });
     } catch (err) {
+      console.error(err);
     } finally {
       setCurrentRequest(null);
       setTripState(TRIP_STATUS.IDLE);
@@ -237,6 +237,7 @@ export function RiderDashboardPage() {
       setTripState(TRIP_STATUS.STARTED);
       publish('bodaboda/ride/status', { tripId, event: 'started', riderId: rider?.id });
     } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -260,6 +261,7 @@ export function RiderDashboardPage() {
       showToast(`Trip done! Collected TZS ${parseFloat(fare).toLocaleString()}`);
       setTimeout(loadTrips, 800);
     } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }

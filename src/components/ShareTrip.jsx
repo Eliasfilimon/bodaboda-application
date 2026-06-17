@@ -6,7 +6,7 @@ import { HiOutlineMapPin, HiOutlineXMark, HiOutlineCheck } from 'react-icons/hi2
 export const ShareTrip = ({ trip, user, rider }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [shareMethod, setShareMethod] = useState(null);
+
   const { t } = useLanguage();
 
   const generateShareText = useCallback(() => {
@@ -38,7 +38,7 @@ export const ShareTrip = ({ trip, user, rider }) => {
       await navigator.clipboard.writeText(generateShareText());
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
+    } catch {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = generateShareText();

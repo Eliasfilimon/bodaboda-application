@@ -9,7 +9,7 @@ import { api } from "../config/api.js";
 import { dodoma_locations, getDistance, locationCoordinates } from "../data/mockData";
 import { Toast } from "../components/Toast";
 import { ErrorMessage } from "../components/ErrorMessage";
-import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineMapPin, HiOutlineCube, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import { HiOutlineArrowLeft, HiOutlineClock, HiOutlineMapPin, HiOutlineCube } from 'react-icons/hi2';
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
@@ -33,10 +33,10 @@ export const RequestRidePage = () => {
   const [destinationCoords, setDestinationCoords] = useState(null);
   
   const [suggestions, setSuggestions] = useState([]);
-  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [, setIsSuggesting] = useState(false);
   
   const [selectedRideType, setSelectedRideType] = useState('economy'); // 'economy' | 'express' | 'delivery'
-  const [paymentMethod, setPaymentMethod] = useState(user?.paymentMethods?.[0] || "Cash");
+  const [paymentMethod] = useState(user?.paymentMethods?.[0] || "Cash");
 
   const showToast = (message, type = "success") => setToast({ show: true, message, type });
 

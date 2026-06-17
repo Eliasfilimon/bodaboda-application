@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../config/api.js';
 
@@ -17,6 +18,7 @@ export const AuthProvider = ({ children }) => {
     const storedRider = localStorage.getItem('rider');
 
     if (storedToken) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setToken(storedToken);
       setUserType(storedUserType);
       if (storedUserType === 'rider' && storedRider) {
@@ -29,67 +31,51 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (phone) => {
-    try {
-      const response = await api.auth.login({ phone });
-      setToken(response.token);
-      setUser(response.user);
-      setRider(null);
-      setUserType('user');
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', 'user');
-      localStorage.setItem('user', JSON.stringify(response.user));
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.auth.login({ phone });
+    setToken(response.token);
+    setUser(response.user);
+    setRider(null);
+    setUserType('user');
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('userType', 'user');
+    localStorage.setItem('user', JSON.stringify(response.user));
+    return response;
   };
 
   const register = async (data) => {
-    try {
-      const response = await api.auth.register(data);
-      setToken(response.token);
-      setUser(response.user);
-      setRider(null);
-      setUserType('user');
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', 'user');
-      localStorage.setItem('user', JSON.stringify(response.user));
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.auth.register(data);
+    setToken(response.token);
+    setUser(response.user);
+    setRider(null);
+    setUserType('user');
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('userType', 'user');
+    localStorage.setItem('user', JSON.stringify(response.user));
+    return response;
   };
 
   const riderLogin = async (phone) => {
-    try {
-      const response = await api.riderAuth.login({ phone });
-      setToken(response.token);
-      setRider(response.rider);
-      setUser(null);
-      setUserType('rider');
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', 'rider');
-      localStorage.setItem('rider', JSON.stringify(response.rider));
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.riderAuth.login({ phone });
+    setToken(response.token);
+    setRider(response.rider);
+    setUser(null);
+    setUserType('rider');
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('userType', 'rider');
+    localStorage.setItem('rider', JSON.stringify(response.rider));
+    return response;
   };
 
   const riderRegister = async (data) => {
-    try {
-      const response = await api.riderAuth.register(data);
-      setToken(response.token);
-      setRider(response.rider);
-      setUser(null);
-      setUserType('rider');
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', 'rider');
-      localStorage.setItem('rider', JSON.stringify(response.rider));
-      return response;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.riderAuth.register(data);
+    setToken(response.token);
+    setRider(response.rider);
+    setUser(null);
+    setUserType('rider');
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('userType', 'rider');
+    localStorage.setItem('rider', JSON.stringify(response.rider));
+    return response;
   };
 
   const logout = () => {

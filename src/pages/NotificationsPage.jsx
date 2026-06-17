@@ -23,6 +23,7 @@ export const NotificationsPage = () => {
   const name = user?.name || rider?.name || 'User';
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNotifications(MOCK_NOTIFICATIONS);
   }, []);
 

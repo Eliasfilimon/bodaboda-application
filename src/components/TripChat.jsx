@@ -48,6 +48,7 @@ export const TripChat = ({ trip, user, rider, isOpen, onClose, userType }) => {
     if (trip?.id) {
       const saved = localStorage.getItem(`chat_${trip.id}`);
       if (saved) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMessages(JSON.parse(saved));
       } else {
         // Initial system message

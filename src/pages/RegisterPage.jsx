@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { dodoma_locations } from '../data/mockData';
 import { validateName, validatePhoneNumber, validateForm } from '../utils/validation';
-import { FaMotorcycle } from 'react-icons/fa';
 
 import { HiOutlineArrowLeft, HiOutlineUser, HiOutlinePhone, HiOutlineArrowPath } from 'react-icons/hi2';
 

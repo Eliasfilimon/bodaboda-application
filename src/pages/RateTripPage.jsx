@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../config/api.js';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { FiChevronLeft, FiMessageSquare } from 'react-icons/fi';
-import { FaMotorcycle } from 'react-icons/fa';
-import { HiOutlineCheckCircle, HiOutlineStar, HiOutlineMapPin, HiOutlineExclamationTriangle, HiOutlineArrowPath } from 'react-icons/hi2';
+import { FiChevronLeft } from 'react-icons/fi';
+import { HiOutlineCheckCircle, HiOutlineStar, HiOutlineExclamationTriangle, HiOutlineArrowPath } from 'react-icons/hi2';
 
 export const RateTripPage = () => {
   const { tripId } = useParams();
@@ -31,6 +30,7 @@ export const RateTripPage = () => {
     }
   }, [tripId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchTrip(); }, [fetchTrip]);
 
   const handleSubmit = async (e) => {

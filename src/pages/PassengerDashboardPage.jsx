@@ -1,19 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEffect, useState } from 'react';
 import { api } from '../config/api.js';
 import { FaMotorcycle } from 'react-icons/fa';
-import { HiOutlineClock, HiOutlineUser, HiOutlineMapPin, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import { HiOutlineClock, HiOutlineMapPin, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 import { FiBell, FiChevronRight } from 'react-icons/fi';
 
 export const PassengerDashboardPage = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [recentTrips, setRecentTrips] = useState([]);
+  const { user } = useAuth();
+    const [recentTrips, setRecentTrips] = useState([]);
   const [loadingTrips, setLoadingTrips] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) { setLoadingTrips(false); return; }
+    if (!user?.id) { 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoadingTrips(false); return; }
     api.trips.getUserTrips(user.id)
       .then(data => setRecentTrips(
         Array.isArray(data)
@@ -139,7 +140,7 @@ export const PassengerDashboardPage = () => {
                     <div>
                       <p className="font-bold text-twende-text text-base">{t.dropoff || t.dropoffLocation}</p>
                       <p className="text-sm text-twende-text-secondary flex items-center gap-2">
-                        <span>{new Date(t.createdAt || Date.now()).toLocaleDateString()}</span>
+                        <span>{new Date(t.createdAt || '2026-01-01').toLocaleDateString()}</span>
                         <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${STATUS_COLOR[t.status] || 'bg-gray-100 text-twende-text-secondary'}`}>
                           {t.status}
                         </span>

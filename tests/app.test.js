@@ -1,3 +1,4 @@
+/* global process */
 /**
  * Bodaboda Application - Unit Tests
  * CS 421: Software Deployment Assignment

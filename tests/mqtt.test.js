@@ -1,3 +1,4 @@
+/* global process */
 /**
  * MQTT Integration Test — Bodaboda Application
  * CS 421: Software Deployment — Task 6 (Advanced CI/CD)

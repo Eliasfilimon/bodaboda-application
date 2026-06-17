@@ -1,4 +1,4 @@
-import { dodoma_locations, locationCoordinates, riders as seedRiders, trips as seedTrips } from "../data/mockData";
+import { locationCoordinates, riders as seedRiders, trips as seedTrips } from "../data/mockData";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 const MOCK_DB_KEY = "boda-boda-digital-mock-db";

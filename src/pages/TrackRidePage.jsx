@@ -16,18 +16,14 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-const riderIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
+
 
 const MQTT_WS = import.meta.env.VITE_MQTT_WS || 'ws://localhost:9010';
 
 export function TrackRidePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, token } = useAuth();
+  useAuth();
   const mqttRef = useRef(null);
 
   const [trip, setTrip] = useState(null);
@@ -37,10 +33,12 @@ export function TrackRidePage() {
 
   useEffect(() => {
     const tripId = searchParams.get('tripId') || localStorage.getItem('activeTripId');
-    if (!tripId) { setLoading(false); return; }
+    if (!tripId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoading(false); return; }
     api.trips.get(tripId)
       .then(data => setTrip(data))
-      .catch(() => {})
+      .catch((e) => { console.error(e); })
       .finally(() => setLoading(false));
   }, [searchParams]);
 
@@ -63,7 +61,9 @@ export function TrackRidePage() {
           localStorage.removeItem('activeTripId');
           setTimeout(() => navigate(`/rate?tripId=${currentId}`), 2500);
         }
-      } catch {}
+      } catch (e) {
+        console.error('Error parsing MQTT message:', e);
+      }
     });
     client.on('close', () => setMqttLive(false));
     return () => client.end();
