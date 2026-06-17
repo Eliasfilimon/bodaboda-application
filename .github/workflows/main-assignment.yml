@@ -58,30 +58,40 @@ jobs:
     name: 🐳 Push to Docker Hub
     runs-on: ubuntu-latest
     needs: [test, mqtt-test] # Pipeline stops if previous steps fail
-    if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+
+      - name: Skip publish when Docker Hub secrets are missing
+        if: env.DOCKERHUB_USERNAME == '' || env.DOCKERHUB_TOKEN == ''
+        run: echo "Skipping Docker Hub push because DOCKERHUB_USERNAME or DOCKERHUB_TOKEN is not configured."
+         
       - name: Log in to Docker Hub
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
           
       - name: Extract Metadata for Backend
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         id: meta-backend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/bodaboda-backend
+          images: ${{ env.DOCKERHUB_USERNAME }}/bodaboda-backend
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=ref,event=tag
             type=sha
 
       - name: Build and Push Backend Image
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -91,16 +101,18 @@ jobs:
           labels: ${{ steps.meta-backend.outputs.labels }}
 
       - name: Extract Metadata for Frontend
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         id: meta-frontend
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/bodaboda-frontend
+          images: ${{ env.DOCKERHUB_USERNAME }}/bodaboda-frontend
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=ref,event=tag
             type=sha
 
       - name: Build and Push Frontend Image
+        if: env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != ''
         uses: docker/build-push-action@v5
         with:
           context: .
